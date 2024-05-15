@@ -131,7 +131,7 @@ void key_press_handler()
   {
   case idle:
     count = 0;
-    for(int i = 0 ;i < 8;i++)
+    for (int i = 0; i < 8; i++)
     {
       ws_pixel_state_reset(i, 0);
       ws_setPixelColor(i, ws_color(0, 0, 0));
@@ -139,7 +139,7 @@ void key_press_handler()
 
     break;
   case pressing:
-    
+
     if (HAL_GetTick() - time[1] > 30)
     {
       time[1] = HAL_GetTick();
@@ -158,11 +158,11 @@ void key_press_handler()
     break;
   case pressed:
     ws_brightness_resetAll(255);
-    
+
     count = 0;
     break;
   case released:
-    if(HAL_GetTick() -  time[0] > 30)
+    if (HAL_GetTick() - time[0] > 30)
     {
       time[0] = HAL_GetTick();
       for (int i = 0; i < count; i++)
@@ -174,7 +174,6 @@ void key_press_handler()
       {
         count = 8;
       }
-      
     }
     // ws_fadeOutAll(10);
     break;
@@ -183,12 +182,7 @@ void key_press_handler()
   }
 }
 
-
-
-
-
 //! ----------------------------
-
 
 //! key fader example
 int key_fader_state = idle;
@@ -197,20 +191,21 @@ void handle_key_fader()
   switch (key_fader_state)
   {
   case idle:
-   
-    ws_brightness_resetAll(0);
-
+    for (int i = 0; i < 8; i++)
+    {
+      ws_setPixelColor(i, ws_color(255, 0, 255));
+      PIXEL[i].brightness = 0;
+    }
+     
     break;
   case pressing:
-    // ws_setPixelColor_brightness(0, ws_color(0, 255, 255), ws_pixel_fadeIn(0, 10));
-    
-    ws_effect_slide_in(0, 10);
+    ws_effect_slide_in(0, 8, 10);
     break;
   case pressed:
-    
+
     break;
   case released:
-    ws_effect_slide_out(0, 10);
+
     break;
   default:
     break;
@@ -224,7 +219,6 @@ void key_fader_timer()
     key_fader_state = idle;
   }
 }
-
 
 //! ----------------------------
 
@@ -263,9 +257,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   ws_init();
+
   ws_clearAll();
   ws_show();
-
+  ws_setBrightness(255);
   // int key_state_1 = idle;
 
   /* USER CODE END 2 */
@@ -287,13 +282,16 @@ int main(void)
     // EVERY_N_MILLISECONDS(500, key_press_timer);
     // key_press_handler();
     //! ----------------------------
-    
+
     //! key fader example
+
     handle_key_fader();
     EVERY_N_MILLISECONDS(1000, key_fader_timer);
-    ws_show();
     //! ----------------------------
-    
+
+    // ws_effect_fadeToBlack(0, 1);
+    ws_pixel_to_buffer();
+    ws_show();
   }
 
   /* USER CODE END 3 */
