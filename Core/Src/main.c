@@ -204,13 +204,13 @@ void handle_key_fader()
   case pressing:
     // ws_setPixelColor_brightness(0, ws_color(0, 255, 255), ws_pixel_fadeIn(0, 10));
     
-    ws_effect_slide_in(0, 10);
+    ws_effect_slide_in(0, 30);
     break;
   case pressed:
     
     break;
   case released:
-    ws_effect_slide_out(0, 10);
+    ws_effect_slide_out(0, 30);
     break;
   default:
     break;

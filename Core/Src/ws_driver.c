@@ -83,6 +83,7 @@ void ws_setAllPixelColor(uint32_t GRBcolor)
 void ws_show()
 {
     uint8_t buff[PIXEL_NUMS * PIXEL_BITS_NUMS] = {0};
+    //aa
     for (int i = 0; i < PIXEL_NUMS; i++)
     {
         for (int j = 0; j < PIXEL_BITS_NUMS; j++)
@@ -314,20 +315,24 @@ uint8_t ws_pixel_fadeInOut(uint16_t n, uint8_t wait)
 
 uint8_t ws_effect_slide_in(uint16_t n, uint8_t wait)
 {
-    static uint8_t count = 0;
-    
+    // static uint8_t count = 0;
+
     if (HAL_GetTick() - PIXEL[n].timer > 30)
     {
 
-        for (int i = 0; i < count; i++)
-        {
+        // for (int i = 0; i < count; i++)
+        // {
 
-            ws_setPixelColor_brightness(i, ws_color(0, 255, 255), ws_pixel_fadeIn(i, wait));
-        }
-        count++;
-        if (count > 4)
+        //     ws_setPixelColor_brightness(i, ws_color(0, 255, 255), ws_pixel_fadeIn(i, wait));
+        // }
+        // count++;
+        // if (count > 4)
+        // {
+        //     count = 0;
+        // }
+        for (int i = 0; i < 4; i++)
         {
-            count = 0;
+            ws_setPixelColor_brightness(i, ws_color(0, 255, 255), ws_pixel_fadeIn(i, wait) );
         }
 
         PIXEL[n].timer = HAL_GetTick();
@@ -337,24 +342,29 @@ uint8_t ws_effect_slide_in(uint16_t n, uint8_t wait)
 uint8_t ws_effect_slide_out(uint16_t n, uint8_t wait)
 {
     static uint8_t count = 0;
-    // if (PIXEL[n ].brightness == 0)
-    // {    
-    //     // PIXEL[n].timer = HAL_GetTick(); 
-    //     count = 0;
-    //     return 0;
-    // }
-    if (HAL_GetTick() - PIXEL[n].timer > 30)
+    if (PIXEL[n ].brightness == 0)
     {
-        for (int i = 0; i < count; i++)
+        // PIXEL[n].timer = HAL_GetTick();
+        count = 0;
+        return 0;
+    }
+    if (HAL_GetTick() - PIXEL[n].timer > 30)
+    {   
+
+
+        for (int i = 0; i < 4; i++)
         {
             ws_setPixelColor_brightness(i, ws_color(0, 255, 255), ws_pixel_fadeOut(i, wait));
+            
         }
-        count++;
-        if (count > 4)
-        {
-            count = 0;
-        }
+        // count++;
+        // if (count > 4)
+        // {
+        //     count = 0;
+        // }
 
         PIXEL[n].timer = HAL_GetTick();
     }
+
+    
 }
