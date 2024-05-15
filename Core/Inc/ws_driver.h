@@ -48,6 +48,16 @@ void ws_setPixelRGB(uint16_t n ,uint8_t red,uint8_t green,uint8_t blue);
 void ws_setPixelColor(uint16_t n ,uint32_t GRBcolor);
 void ws_setAllPixelColor(uint32_t GRBcolor);
 
+//todo 新的灯珠控制
+uint8_t ws_getPixelBrightness(uint16_t n);
+void ws_setPixelColor_brightness(uint16_t n,uint32_t RGBColor,uint8_t brightness);
+uint8_t ws_pixel_fadeOut(uint16_t n,uint8_t wait);
+uint8_t ws_pixel_fadeIn(uint16_t n,uint8_t wait);
+uint8_t ws_pixel_fadeInOut(uint16_t n,uint8_t wait);
+uint8_t ws_effect_slide_in(uint16_t n,uint8_t wait);
+uint8_t ws_effect_slide_out(uint16_t n,uint8_t wait);
+
+
 
 // Effect...
 void ws_rainbow(uint8_t wait);

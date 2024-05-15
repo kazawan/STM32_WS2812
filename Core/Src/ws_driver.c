@@ -226,3 +226,135 @@ void EVERY_N_MILLISECONDS(int wait, void (*callback)())
         callback();
     }
 }
+
+uint8_t ws_getPixelBrightness(uint16_t n)
+{
+    return PIXEL[n].brightness;
+}
+
+void ws_setPixelColor_brightness(uint16_t n, uint32_t RGBColor, uint8_t brightness)
+{
+    PIXEL[n].color = RGBColor;
+    if (brightness > 255)
+    {
+        brightness = 255;
+    }
+    PIXEL[n].brightness = brightness;
+    uint8_t g = (RGBColor >> 16) & 0XFF * brightness / 255;
+    uint8_t r = (RGBColor >> 8) & 0XFF * brightness / 255;
+    uint8_t b = RGBColor & 0XFF * brightness / 255;
+    if (n < PIXEL_NUMS)
+    {
+        for (int i = 0; i < 24; i++)
+        {
+            PIXEL_BUFFER[n][i] = (((ws_color(r, g, b) << i) & 0X800000) ? CODE_H : CODE_L);
+        }
+    }
+}
+
+uint8_t ws_pixel_fadeOut(uint16_t n, uint8_t wait)
+{
+    // static uint8_t temp = 255;
+    if (HAL_GetTick() - PIXEL[n].timer > wait)
+    {
+        if (PIXEL[n].brightness <= 0)
+        {
+            return 0;
+        }
+        uint8_t temp = PIXEL[n].brightness - 5;
+        if (temp < 0)
+        {
+            temp = 0;
+        }
+        PIXEL[n].timer = HAL_GetTick();
+        return temp;
+    }
+    return PIXEL[n].brightness;
+}
+
+uint8_t ws_pixel_fadeIn(uint16_t n, uint8_t wait)
+{
+    if (HAL_GetTick() - PIXEL[n].timer > wait)
+    {
+        if (PIXEL[n].brightness >= 255)
+        {
+            return 255;
+        }
+        uint8_t temp = PIXEL[n].brightness + 5;
+        if (temp > 255)
+        {
+            temp = 255;
+        }
+        PIXEL[n].timer = HAL_GetTick();
+        return temp;
+    }
+    return PIXEL[n].brightness;
+}
+
+uint8_t ws_pixel_fadeInOut(uint16_t n, uint8_t wait)
+{
+    static uint8_t trigger = 0;
+    if (trigger == 0)
+    {
+        PIXEL[n].brightness = ws_pixel_fadeIn(n, wait);
+        if (PIXEL[n].brightness == 255)
+        {
+            trigger = 1;
+        }
+    }
+    else
+    {
+        PIXEL[n].brightness = ws_pixel_fadeOut(n, wait);
+        if (PIXEL[n].brightness == 0)
+        {
+            trigger = 0;
+        }
+    }
+}
+
+uint8_t ws_effect_slide_in(uint16_t n, uint8_t wait)
+{
+    static uint8_t count = 0;
+    
+    if (HAL_GetTick() - PIXEL[n].timer > 30)
+    {
+
+        for (int i = 0; i < count; i++)
+        {
+
+            ws_setPixelColor_brightness(i, ws_color(0, 255, 255), ws_pixel_fadeIn(i, wait));
+        }
+        count++;
+        if (count > 4)
+        {
+            count = 0;
+        }
+
+        PIXEL[n].timer = HAL_GetTick();
+    }
+}
+
+uint8_t ws_effect_slide_out(uint16_t n, uint8_t wait)
+{
+    static uint8_t count = 0;
+    // if (PIXEL[n ].brightness == 0)
+    // {    
+    //     // PIXEL[n].timer = HAL_GetTick(); 
+    //     count = 0;
+    //     return 0;
+    // }
+    if (HAL_GetTick() - PIXEL[n].timer > 30)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            ws_setPixelColor_brightness(i, ws_color(0, 255, 255), ws_pixel_fadeOut(i, wait));
+        }
+        count++;
+        if (count > 4)
+        {
+            count = 0;
+        }
+
+        PIXEL[n].timer = HAL_GetTick();
+    }
+}

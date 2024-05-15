@@ -189,6 +189,45 @@ void key_press_handler()
 
 //! ----------------------------
 
+
+//! key fader example
+int key_fader_state = idle;
+void handle_key_fader()
+{
+  switch (key_fader_state)
+  {
+  case idle:
+   
+    ws_brightness_resetAll(0);
+
+    break;
+  case pressing:
+    // ws_setPixelColor_brightness(0, ws_color(0, 255, 255), ws_pixel_fadeIn(0, 10));
+    
+    ws_effect_slide_in(0, 10);
+    break;
+  case pressed:
+    
+    break;
+  case released:
+    ws_effect_slide_out(0, 10);
+    break;
+  default:
+    break;
+  }
+}
+void key_fader_timer()
+{
+  key_fader_state++;
+  if (key_fader_state > released)
+  {
+    key_fader_state = idle;
+  }
+}
+
+
+//! ----------------------------
+
 /* USER CODE END 0 */
 
 /**
@@ -226,6 +265,7 @@ int main(void)
   ws_init();
   ws_clearAll();
   ws_show();
+
   // int key_state_1 = idle;
 
   /* USER CODE END 2 */
@@ -247,9 +287,13 @@ int main(void)
     // EVERY_N_MILLISECONDS(500, key_press_timer);
     // key_press_handler();
     //! ----------------------------
-
     
+    //! key fader example
+    handle_key_fader();
+    EVERY_N_MILLISECONDS(1000, key_fader_timer);
     ws_show();
+    //! ----------------------------
+    
   }
 
   /* USER CODE END 3 */
