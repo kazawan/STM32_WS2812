@@ -100,7 +100,9 @@ void ws_setBrightness(uint8_t brightness)
 }
 
 void ws_setPixelColor(uint16_t n, uint32_t GRBcolor)
-{
+{   
+    if(n < 0 || n > PIXEL_NUMS) return;
+ 
     PIXEL[n].color = GRBcolor;
 }
 
@@ -147,7 +149,10 @@ void ws_clearAll(void)
 void ws_effect_fadeIn(uint16_t n, uint8_t wait)
 {
     if (HAL_GetTick() - PIXEL[n].timer > wait)
-    {
+    {   
+        if(PIXEL[n].brightness == 255){
+            return;
+        }
         if (PIXEL[n].brightness < 255)
         {
             PIXEL[n].brightness += 1;

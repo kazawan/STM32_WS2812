@@ -76,136 +76,166 @@ void show_handler(uint8_t *ws_buffer)
 }
 
 //! example for fade in and fade out effect
-void key_handler(int key_state, int key_num)
-{
-  switch (key_state)
-  {
-  case idle:
-    ws_brightness_resetAll(0);
-    ws_setAllPixelColor(ws_color(0, 0, 0));
-    break;
-  case pressed:
-    ws_fadeInAll(10, ws_color(127, 127, 0));
+// void key_handler(int key_state, int key_num)
+// {
+//   switch (key_state)
+//   {
+//   case idle:
+//     ws_brightness_resetAll(0);
+//     ws_setAllPixelColor(ws_color(0, 0, 0));
+//     break;
+//   case pressed:
+//     ws_fadeInAll(10, ws_color(127, 127, 0));
 
-    break;
-  case released:
+//     break;
+//   case released:
 
-    ws_fadeOutAll(50);
-    break;
-  default:
-    break;
-  }
-}
+//     ws_fadeOutAll(50);
+//     break;
+//   default:
+//     break;
+//   }
+// }
 
-int key_state = idle;
+// int key_state = idle;
 
-void time_handler()
-{
-  key_state++;
-  if (key_state > released)
-  {
-    key_state = idle;
-  }
-}
+// void time_handler()
+// {
+//   key_state++;
+//   if (key_state > released)
+//   {
+//     key_state = idle;
+//   }
+// }
 
 //! -----------------
 
 //! example water light effect
-int water_light_state = idle;
-int count = 0;
-int start_pixel = 0;
-int key_press = idle;
+// int water_light_state = idle;
+// int count = 0;
+// int start_pixel = 0;
+// int key_press = idle;
 
-void key_press_timer()
-{
-  key_press++;
-  if (key_press > released)
-  {
-    key_press = idle;
-  }
-}
+// void key_press_timer()
+// {
+//   key_press++;
+//   if (key_press > released)
+//   {
+//     key_press = idle;
+//   }
+// }
 
-void key_press_handler()
-{
-  switch (key_press)
-  {
-  case idle:
-    count = 0;
-    for (int i = 0; i < 8; i++)
-    {
-      ws_pixel_state_reset(i, 0);
-      ws_setPixelColor(i, ws_color(0, 0, 0));
-    }
+// void key_press_handler()
+// {
+//   switch (key_press)
+//   {
+//   case idle:
+//     count = 0;
+//     for (int i = 0; i < 8; i++)
+//     {
+//       ws_pixel_state_reset(i, 0);
+//       ws_setPixelColor(i, ws_color(0, 0, 0));
+//     }
 
-    break;
-  case pressing:
+//     break;
+//   case pressing:
 
-    if (HAL_GetTick() - time[1] > 30)
-    {
-      time[1] = HAL_GetTick();
-      count++;
-      if (count > 8)
-      {
-        count = 8;
-      }
-      for (int i = 0; i < count; i++)
-      {
-        ws_fadeIn(i, 10, ws_color(0, 255, 255));
-      }
-    }
+//     if (HAL_GetTick() - time[1] > 30)
+//     {
+//       time[1] = HAL_GetTick();
+//       count++;
+//       if (count > 8)
+//       {
+//         count = 8;
+//       }
+//       for (int i = 0; i < count; i++)
+//       {
+//         ws_fadeIn(i, 10, ws_color(0, 255, 255));
+//       }
+//     }
 
-    // key_press = idle;
-    break;
-  case pressed:
-    ws_brightness_resetAll(255);
+//     // key_press = idle;
+//     break;
+//   case pressed:
+//     ws_brightness_resetAll(255);
 
-    count = 0;
-    break;
-  case released:
-    if (HAL_GetTick() - time[0] > 30)
-    {
-      time[0] = HAL_GetTick();
-      for (int i = 0; i < count; i++)
-      {
-        ws_fadeOut(i, 10);
-      }
-      count++;
-      if (count > 8)
-      {
-        count = 8;
-      }
-    }
-    // ws_fadeOutAll(10);
-    break;
-  default:
-    break;
-  }
-}
+//     count = 0;
+//     break;
+//   case released:
+//     if (HAL_GetTick() - time[0] > 30)
+//     {
+//       time[0] = HAL_GetTick();
+//       for (int i = 0; i < count; i++)
+//       {
+//         ws_fadeOut(i, 10);
+//       }
+//       count++;
+//       if (count > 8)
+//       {
+//         count = 8;
+//       }
+//     }
+//     // ws_fadeOutAll(10);
+//     break;
+//   default:
+//     break;
+//   }
+// }
 
 //! ----------------------------
 
 //! key fader example
 int key_fader_state = idle;
+int start = 4;
+int len = 0;
+int target = 3;
+int trigger = 0;
 void handle_key_fader()
 {
   switch (key_fader_state)
   {
   case idle:
-    for (int i = 0; i < 8; i++)
-    {
-      ws_setPixelColor(i, ws_color(255, 0, 255));
-      PIXEL[i].brightness = 0;
-    }
-     
+
     break;
   case pressing:
-    ws_effect_slide_in(0, 8, 10);
+    if(HAL_GetTick() - time[1] > 33)
+    {
+      time[1] = HAL_GetTick();
+      len++;
+      if(len > target)
+      {
+        len = target;
+      }
+    }
+
+    uint8_t step = 255 / len;
+    // to right
+    for (int i = 0; i < len; i++)
+    {
+
+      int pos = start + i;
+      ws_setPixelColor(pos, ws_color(255,0,255));
+      // PIXEL[pos].brightness = i * 5 + 60;
+      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
+
+    }
+
+    // to left
+    for (int i = 0; i < len; i++)
+    {
+      int pos = start - i ;
+      ws_setPixelColor(pos, ws_color(255,0,255));
+      
+      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
+    }
+
+
     break;
   case pressed:
 
     break;
   case released:
-
+    len = 0;
     break;
   default:
     break;
@@ -260,7 +290,7 @@ int main(void)
 
   ws_clearAll();
   ws_show();
-  ws_setBrightness(255);
+  ws_setBrightness(0);
   // int key_state_1 = idle;
 
   /* USER CODE END 2 */
@@ -286,10 +316,14 @@ int main(void)
     //! key fader example
 
     handle_key_fader();
-    EVERY_N_MILLISECONDS(1000, key_fader_timer);
+    EVERY_N_MILLISECONDS(500, key_fader_timer);
     //! ----------------------------
+   
+    for (int i = 0; i < 8; i++)
+    {
+      ws_effect_fadeToBlack(i, 5);
+    }
 
-    // ws_effect_fadeToBlack(0, 1);
     ws_pixel_to_buffer();
     ws_show();
   }
