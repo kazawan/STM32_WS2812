@@ -65,7 +65,7 @@ void SystemClock_Config(void);
 // WS2812B_TypeDef ws[ws_num];
 // extern PIXEL_COLOR[PIXEL_NUMS];
 extern PIXEL_TypeDef PIXEL[PIXEL_NUMS];
-
+int key_state[2] = {idle, idle};
 int time[2] = {0, 0};
 int brightness[2] = {255, 255};
 
@@ -186,10 +186,14 @@ void show_handler(uint8_t *ws_buffer)
 
 //! key fader example
 int key_fader_state = idle;
-int start = 4;
+int key_fader_state_2 = idle;
+int key_timer = 0;
+int key_timer_2 = 0;
+int start = 1;
+int start_2 = 5;
 int len = 0;
-int target = 3;
-int trigger = 0;
+int len_2 = 0;
+int target = 2;
 void handle_key_fader()
 {
   switch (key_fader_state)
@@ -198,9 +202,9 @@ void handle_key_fader()
 
     break;
   case pressing:
-    if(HAL_GetTick() - time[1] > 33)
+    if(HAL_GetTick() - key_timer > 33)
     {
-      time[1] = HAL_GetTick();
+      key_timer = HAL_GetTick();
       len++;
       if(len > target)
       {
@@ -236,6 +240,59 @@ void handle_key_fader()
     break;
   case released:
     len = 0;
+
+    break;
+  default:
+    break;
+  }
+}
+
+void handle_key_fader2()
+{
+  switch (key_fader_state_2)
+  {
+  case idle:
+
+    break;
+  case pressing:
+    if(HAL_GetTick() - key_timer_2 > 33)
+    {
+      key_timer_2 = HAL_GetTick();
+      len_2++;
+      if(len_2 > target)
+      {
+        len_2 = target;
+      }
+    }
+
+    uint8_t step = 255 / len_2;
+    // to right
+    for (int i = 0; i < len_2; i++)
+    {
+
+      int pos = start_2 + i;
+      ws_setPixelColor(pos, ws_color(255,0,255));
+      // PIXEL[pos].brightness = i * 5 + 60;
+      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
+
+    }
+
+    // to left
+    for (int i = 0; i < len_2; i++)
+    {
+      int pos = start_2 - i ;
+      ws_setPixelColor(pos, ws_color(255,0,255));
+      
+      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
+    }
+
+
+    break;
+  case pressed:
+
+    break;
+  case released:
+    len_2 = 0;
     break;
   default:
     break;
@@ -247,6 +304,15 @@ void key_fader_timer()
   if (key_fader_state > released)
   {
     key_fader_state = idle;
+  }
+}
+
+void key_fader_timer2()
+{
+  key_fader_state_2++;
+  if (key_fader_state_2 > released)
+  {
+    key_fader_state_2 = idle;
   }
 }
 
@@ -316,7 +382,11 @@ int main(void)
     //! key fader example
 
     handle_key_fader();
-    EVERY_N_MILLISECONDS(500, key_fader_timer);
+    handle_key_fader2();
+    // EVERY_N_MILLISECONDS(500, key_fader_timer);
+    // EVERY_N_MILLISECONDS(1000, key_fader_timer2);
+   
+
     //! ----------------------------
    
     for (int i = 0; i < 8; i++)
@@ -326,6 +396,20 @@ int main(void)
 
     ws_pixel_to_buffer();
     ws_show();
+
+     if(HAL_GetTick() - time[0] > 300)
+    {
+      key_fader_timer();
+      time[0] = HAL_GetTick();
+
+      
+    }
+    if(HAL_GetTick() - time[1] > 500)
+    {
+      key_fader_timer2();
+      time[1] = HAL_GetTick();
+     
+    }
   }
 
   /* USER CODE END 3 */
