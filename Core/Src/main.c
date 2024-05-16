@@ -189,11 +189,14 @@ int key_fader_state = idle;
 int key_fader_state_2 = idle;
 int key_timer = 0;
 int key_timer_2 = 0;
-int start = 1;
-int start_2 = 5;
+int start = 2;
+int start_2 = 6;
 int len = 0;
 int len_2 = 0;
-int target = 2;
+int target = 4;
+
+int width = 4;
+int height = 2;
 void handle_key_fader()
 {
   switch (key_fader_state)
@@ -202,35 +205,63 @@ void handle_key_fader()
 
     break;
   case pressing:
-    if(HAL_GetTick() - key_timer > 33)
+    // 延时增加长度
+    if (HAL_GetTick() - key_timer > 33)
     {
       key_timer = HAL_GetTick();
       len++;
-      if(len > target)
+      if (len > target)
       {
         len = target;
       }
     }
-
+    // 每次增加的亮度
     uint8_t step = 255 / len;
+   
+    int layer = 0;
+    if (start < 4)
+    {
+      layer = 0;
+    }
+    else
+    {
+      layer = 1;
+    }
+    int toRight = width * (layer + 1) - 1;
+    int toLeft = width * (layer + 1) - width;
+    // to left
+
+    for (int i = 0; i < len; i++)
+    {
+      int pos = start - i;
+      if (pos < toLeft) // 边缘检测
+      {
+        // return;
+      }
+      else
+      {
+      
+          
+        ws_setPixelColor(pos, ws_color(255, 0, 255));
+        PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64;
+      }
+    }
     // to right
+
     for (int i = 0; i < len; i++)
     {
 
       int pos = start + i;
-      ws_setPixelColor(pos, ws_color(255,0,255));
-      // PIXEL[pos].brightness = i * 5 + 60;
-      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
-
-    }
-
-    // to left
-    for (int i = 0; i < len; i++)
-    {
-      int pos = start - i ;
-      ws_setPixelColor(pos, ws_color(255,0,255));
-      
-      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
+      if (pos > toRight) // 边缘检测
+      {
+        // return;
+      }
+      else
+      {
+        ws_setPixelColor(pos, ws_color(255, 0, 255));
+        // PIXEL[pos].brightness = i * 5 + 60;
+        PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64;
+      }
     }
 
 
@@ -255,37 +286,60 @@ void handle_key_fader2()
 
     break;
   case pressing:
-    if(HAL_GetTick() - key_timer_2 > 33)
+    if (HAL_GetTick() - key_timer_2 > 33)
     {
       key_timer_2 = HAL_GetTick();
       len_2++;
-      if(len_2 > target)
+      if (len_2 > target)
       {
         len_2 = target;
       }
     }
 
     uint8_t step = 255 / len_2;
+    int layer2 = 0;
+    if (start_2 < 4)
+    {
+      layer2 = 0;
+    }
+    else
+    {
+      layer2 = 1;
+    }
+
+    for (int i = 0; i < len_2; i++)
+    {
+      int pos = start_2 - i;
+      if (pos < width * (layer2 + 1) - width)
+      {
+        // return;
+      }
+      else
+      {
+        ws_setPixelColor(pos, ws_color(255, 0, 255));
+
+        PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64;
+      }
+    }
     // to right
     for (int i = 0; i < len_2; i++)
     {
 
       int pos = start_2 + i;
-      ws_setPixelColor(pos, ws_color(255,0,255));
-      // PIXEL[pos].brightness = i * 5 + 60;
-      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
+      if (pos > width * (layer2 + 1) - 1)
+      {
+        // return;
+      }
+      else
+      {
 
+        ws_setPixelColor(pos, ws_color(255, 0, 255));
+        // PIXEL[pos].brightness = i * 5 + 60;
+        PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64;
+      }
     }
 
     // to left
-    for (int i = 0; i < len_2; i++)
-    {
-      int pos = start_2 - i ;
-      ws_setPixelColor(pos, ws_color(255,0,255));
-      
-      PIXEL[pos].brightness = i * step + 64 >= 255 ? 255 : i * step + 64   ;
-    }
-
 
     break;
   case pressed:
@@ -385,10 +439,9 @@ int main(void)
     handle_key_fader2();
     // EVERY_N_MILLISECONDS(500, key_fader_timer);
     // EVERY_N_MILLISECONDS(1000, key_fader_timer2);
-   
 
     //! ----------------------------
-   
+
     for (int i = 0; i < 8; i++)
     {
       ws_effect_fadeToBlack(i, 5);
@@ -397,18 +450,15 @@ int main(void)
     ws_pixel_to_buffer();
     ws_show();
 
-     if(HAL_GetTick() - time[0] > 300)
+    if (HAL_GetTick() - time[0] > 500)
     {
       key_fader_timer();
       time[0] = HAL_GetTick();
-
-      
     }
-    if(HAL_GetTick() - time[1] > 500)
+    if (HAL_GetTick() - time[1] > 1000)
     {
       key_fader_timer2();
       time[1] = HAL_GetTick();
-     
     }
   }
 
